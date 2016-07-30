@@ -29,9 +29,7 @@ impl Broadcaster {
     }
 
     pub fn listener(&self) -> Listener {
-        Listener {
-            cond: self.cond.clone(),
-        }
+        Listener { cond: self.cond.clone() }
     }
 }
 

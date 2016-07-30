@@ -1,14 +1,12 @@
 use broadcast::{Broadcaster, Listener};
-use buffer;
-use buffer::Buffer;
 use std::io::{self, Read, Write, Seek, SeekFrom};
 
-pub struct Writer {
-    data: Buffer,
+pub struct Writer<T: Write> {
+    data: T,
     broadcaster: Broadcaster,
 }
 
-impl Write for Writer {
+impl<T: Write> Write for Writer<T> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         let n = try!(self.data.write(buf));
         self.broadcaster.wrote(n);
@@ -20,28 +18,28 @@ impl Write for Writer {
     }
 }
 
-impl Writer {
-    pub fn new(cap: usize) -> Writer {
+impl<T: Write> Writer<T> {
+    pub fn new(w: T) -> Writer<T> {
         Writer {
-            data: Buffer::new(cap),
+            data: w,
             broadcaster: Broadcaster::new(),
         }
     }
 
-    pub fn reader(&self) -> Reader {
+    pub fn reader<R: Read + Seek>(&self, r: R) -> Reader<R> {
         Reader {
-            data: self.data.reader(),
+            data: r,
             listener: self.broadcaster.listener(),
         }
     }
 }
 
-pub struct Reader {
-    data: buffer::Reader,
+pub struct Reader<T: Read + Seek> {
+    data: T,
     listener: Listener,
 }
 
-impl Read for Reader {
+impl<T: Read + Seek> Read for Reader<T> {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         loop {
             let n = try!(self.data.read(buf));
