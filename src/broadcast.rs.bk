@@ -1,0 +1,52 @@
+use std::sync::{Arc, Mutex, Condvar};
+use std::clone::Clone;
+
+struct State {
+    size: usize,
+    open: bool,
+}
+
+pub struct Broadcaster {
+    cond: Arc<(Mutex<State>, Condvar)>,
+}
+
+impl Broadcaster {
+    pub fn new() -> Broadcaster {
+        Broadcaster {
+            cond: Arc::new((Mutex::new(State {
+                size: 0,
+                open: true,
+            }),
+                            Condvar::new())),
+        }
+    }
+
+    pub fn wrote(&self, n: usize) {
+        let &(ref lock, ref cvar) = &*self.cond;
+        let mut state = lock.lock().unwrap();
+        state.size += n;
+        cvar.notify_all();
+    }
+
+    pub fn close(&self) {
+     let &(ref lock, ref cvar) = &*self.cond;
+        let mut state = lock.lock().unwrap();
+        state.open = false;
+        cvar.notify_all();   
+    }
+
+    pub fn wait(&self, off: u64) -> (usize, bool) {
+        let &(ref lock, ref cvar) = &*self.cond;
+        let mut state = lock.lock().unwrap();
+        while state.open && state.size <= off as usize {
+            state = cvar.wait(state).unwrap();
+        }
+        (state.size - off as usize, state.open)
+    }
+}
+
+impl Clone for Broadcaster {
+    fn clone(&self) -> Broadcaster {
+        Broadcaster { cond: self.cond.clone() }
+    }
+}
