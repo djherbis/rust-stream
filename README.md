@@ -6,7 +6,7 @@ stream
 
 Usage
 ------------
-Rust Port of the idea behind https://github.com/djherbis/stream.
+Rust Port of the idea behind https://github.com/djherbis/stream. (In Review)
 
 A Stream is a buffer with the following properties:
 
