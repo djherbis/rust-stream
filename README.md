@@ -6,6 +6,8 @@ stream
 
 Usage
 ------------
+Rust Port of the idea behind https://github.com/djherbis/stream.
+
 A Stream is a buffer with the following properties:
 
 * 1 Writer, N Readers can make progress concurrently
