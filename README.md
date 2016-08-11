@@ -17,11 +17,11 @@ A Stream is a buffer with the following properties:
 
 Basically, a Writer broadcasts bytes to the Readers.
 
-#TODO(djherbis): example
+TODO(djherbis): example
 ```
 
 Installation
 ------------
 ```sh
-#TODO(djherbis): how to install
+//TODO(djherbis): how to install
 ```
