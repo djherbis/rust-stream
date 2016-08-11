@@ -11,6 +11,7 @@ A Stream is a buffer with the following properties:
 * 1 Writer, N Readers can make progress concurrently
 * Each Reader Reads every byte written by the Writer in order
 * Each Reader returns EOF only once the Writer is dropped.
+* A Stream can be backed by a File, or an in-memory append-only buffer
 
 Basically, a Writer broadcasts bytes to the Readers.
 
