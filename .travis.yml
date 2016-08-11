@@ -10,8 +10,8 @@ before_script:
 
 script:
 - |
-    (cd stream && travis-cargo build) &&
-    (cd stream && travis-cargo test)
+    (travis-cargo build) &&
+    (travis-cargo test)
 
 env:
   global:
