@@ -5,6 +5,7 @@ use std::io::{Read, Write, Seek, SeekFrom, Error, ErrorKind, Result};
 use std::slice;
 use std::sync::{Arc, RwLock};
 use std::sync::atomic::{AtomicUsize, Ordering};
+use next_reader::NextReader;
 
 /// A byte buffer that can only be appended to.
 /// Once added, elements cannot be removed or replaced.
@@ -96,15 +97,19 @@ impl Buffer {
         }
     }
 
-    pub fn reader(&self) -> Reader {
-        Reader {
-            read_start: 0,
-            data: self.data.clone(),
-        }
-    }
-
     pub fn len(&self) -> usize {
         self.len
+    }
+}
+
+impl NextReader for Buffer {
+    type Reader = Reader;
+
+    fn reader(&self) -> Result<Reader> {
+        return Ok(Reader {
+            read_start: 0,
+            data: self.data.clone(),
+        });
     }
 }
 

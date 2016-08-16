@@ -7,3 +7,4 @@ extern crate alloc;
 pub mod buffer;
 pub mod stream;
 pub mod broadcast;
+pub mod next_reader;
