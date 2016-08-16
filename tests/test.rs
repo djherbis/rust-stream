@@ -1,7 +1,6 @@
 extern crate stream;
 
 use std::io::prelude::*;
-use std::fs::File;
 use std::path::Path;
 use stream::stream::Writer;
 use stream::buffer::Buffer;

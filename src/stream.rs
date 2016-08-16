@@ -44,14 +44,7 @@ impl<T: Write + NextReader> Write for Writer<T> {
     }
 }
 
-impl<T: Write + NextReader> Writer<T> {
-    pub fn new(w: T) -> Writer<T> {
-        Writer {
-            data: w,
-            broadcaster: Broadcaster::new(),
-        }
-    }
-
+impl<'a> Writer<NamedFile<'a>> {
     pub fn from_path(path: &Path) -> Result<Writer<NamedFile>> {
         let f = try!(File::create(path));
         Ok(Writer {
@@ -61,6 +54,15 @@ impl<T: Write + NextReader> Writer<T> {
             },
             broadcaster: Broadcaster::new(),
         })
+    }
+}
+
+impl<T: Write + NextReader> Writer<T> {
+    pub fn new(w: T) -> Writer<T> {
+        Writer {
+            data: w,
+            broadcaster: Broadcaster::new(),
+        }
     }
 
     pub fn reader(&self) -> Result<Reader<T::Reader>> {
