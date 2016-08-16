@@ -5,7 +5,7 @@ use std::io::{Read, Write, Seek, SeekFrom, Error, ErrorKind, Result};
 use std::slice;
 use std::sync::{Arc, RwLock};
 use std::sync::atomic::{AtomicUsize, Ordering};
-use next_reader::{NextReader};
+use next_reader::NextReader;
 
 /// A byte buffer that can only be appended to.
 /// Once added, elements cannot be removed or replaced.
@@ -109,7 +109,7 @@ impl NextReader for Buffer {
         return Ok(Reader {
             read_start: 0,
             data: self.data.clone(),
-        })
+        });
     }
 }
 
@@ -145,4 +145,25 @@ impl Seek for Reader {
         self.read_start = new_pos as usize;
         Ok(new_pos as u64)
     }
+}
+
+#[test]
+fn it_buffers() {
+    let mut writer = Buffer::new(1);
+    let mut reader = writer.reader().unwrap();
+    writer.write(b"hello").unwrap();
+
+    let mut bytes = [0; 11];
+    assert_eq!(reader.read(&mut bytes).unwrap(), 5);
+    assert_eq!(&bytes[..5], b"hello");
+
+
+    writer.write(b" world").unwrap();
+    let bytes = ::std::thread::spawn(move || {
+            assert_eq!(reader.read(&mut bytes[5..]).unwrap(), 6);
+            bytes
+        })
+        .join()
+        .unwrap();
+    assert_eq!(&bytes, b"hello world");
 }

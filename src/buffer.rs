@@ -146,3 +146,24 @@ impl Seek for Reader {
         Ok(new_pos as u64)
     }
 }
+
+#[test]
+fn it_buffers() {
+    let mut writer = Buffer::new(1);
+    let mut reader = writer.reader().unwrap();
+    writer.write(b"hello").unwrap();
+
+    let mut bytes = [0; 11];
+    assert_eq!(reader.read(&mut bytes).unwrap(), 5);
+    assert_eq!(&bytes[..5], b"hello");
+
+
+    writer.write(b" world").unwrap();
+    let bytes = ::std::thread::spawn(move || {
+            assert_eq!(reader.read(&mut bytes[5..]).unwrap(), 6);
+            bytes
+        })
+        .join()
+        .unwrap();
+    assert_eq!(&bytes, b"hello world");
+}

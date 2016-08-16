@@ -95,3 +95,70 @@ impl<T: Read + Seek> Read for Reader<T> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use std::thread;
+    use std::fs;
+    use std::time::Duration;
+    use buffer::Buffer;
+    use stream::Writer;
+    use std::path::Path;
+    use std::io::{Write, Read};
+
+    #[test]
+    fn it_streams_mem() {
+        let fw = Buffer::new(1);
+
+        // TODO(djherbis): reuse this 'test' code
+        let mut writer = Writer::new(fw);
+        let mut reader = writer.reader().unwrap();
+
+        writer.write(b"hello").unwrap();
+
+        let mut bytes = [0; 15];
+        assert_eq!(reader.read(&mut bytes).unwrap(), 5);
+        assert_eq!(&bytes[..5], b"hello");
+
+        thread::spawn(move || {
+            thread::sleep(Duration::from_millis(50));
+            writer.write(b" world").unwrap();
+        });
+
+        let bytes = thread::spawn(move || {
+                assert_eq!(reader.read(&mut bytes[5..]).unwrap(), 6);
+                bytes
+            })
+            .join()
+            .unwrap();
+        assert_eq!(&bytes[..11], b"hello world");
+    }
+
+    #[test]
+    fn it_streams_on_disk() {
+        // TODO(djherbis): reuse this 'test' code
+        let mut writer = Writer::from_path(Path::new("foo.txt")).unwrap();
+        let mut reader = writer.reader().unwrap();
+
+        writer.write(b"hello").unwrap();
+
+        let mut bytes = [0; 15];
+        assert_eq!(reader.read(&mut bytes).unwrap(), 5);
+        assert_eq!(&bytes[..5], b"hello");
+
+        thread::spawn(move || {
+            thread::sleep(Duration::from_millis(50));
+            writer.write(b" world").unwrap();
+        });
+
+        let bytes = thread::spawn(move || {
+                assert_eq!(reader.read(&mut bytes[5..]).unwrap(), 6);
+                bytes
+            })
+            .join()
+            .unwrap();
+        assert_eq!(&bytes[..11], b"hello world");
+        fs::remove_file("foo.txt").unwrap();
+    }
+}
