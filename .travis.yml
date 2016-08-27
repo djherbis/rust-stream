@@ -12,9 +12,10 @@ rust:
 - nightly
 before_script:
 - |
-  cargo install rustfmt || true
   pip install 'travis-cargo<0.2' --user &&
-  export PATH=$HOME/.local/bin:$PATH
+  (cargo install rustfmt || true) &&
+  export PATH=$HOME/.local/bin:$PATH &&
+  export PATH=$HOME/.cargo/bin:$PATH
 script:
   - cargo fmt -- --write-mode=diff
   - cargo build --verbose
