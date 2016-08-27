@@ -1,5 +1,5 @@
 use broadcast::{Broadcaster, Listener};
-use std::io::{self, Result, Read, Write, Seek, SeekFrom};
+use std::io::{self, Result, Read, Write, Seek, SeekFrom, Error, ErrorKind};
 use next_reader::NextReader;
 use std::path::Path;
 use std::fs::File;
@@ -72,6 +72,14 @@ impl<T: Write + NextReader> Writer<T> {
             listener: self.broadcaster.listener(),
         })
     }
+
+    pub fn async_reader(&self) -> Result<AsyncReader<T::Reader>> {
+        let r = try!(self.data.reader());
+        Ok(AsyncReader {
+            data: r,
+            listener: self.broadcaster.listener(),
+        })
+    }
 }
 
 pub struct Reader<T: Read + Seek> {
@@ -90,6 +98,30 @@ impl<T: Read + Seek> Read for Reader<T> {
             let pos = try!(self.data.seek(SeekFrom::Current(0)));
             let (n, open) = self.listener.wait(pos);
             if n == 0 && !open {
+                return Ok(0);
+            }
+        }
+    }
+}
+
+pub struct AsyncReader<T: Read + Seek> {
+    data: T,
+    listener: Listener,
+}
+
+impl<T: Read + Seek> Read for AsyncReader<T> {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        loop {
+            let n = try!(self.data.read(buf));
+            if n > 0 {
+                return Ok(n);
+            }
+
+            let pos = try!(self.data.seek(SeekFrom::Current(0)));
+            let (n, open) = self.listener.state(pos);
+            if n == 0 && open {
+                return Err(Error::new(ErrorKind::WouldBlock, "caught up to Writer"));
+            } else if !open {
                 return Ok(0);
             }
         }
@@ -132,6 +164,27 @@ mod tests {
             })
             .join()
             .unwrap();
+        assert_eq!(&bytes[..11], b"hello world");
+    }
+
+    #[test]
+    fn it_streams_mem_async() {
+        let fw = Buffer::new(1);
+
+        let mut writer = Writer::new(fw);
+        let mut reader = writer.async_reader().unwrap();
+
+        writer.write(b"hello").unwrap();
+
+        let mut bytes = [0; 15];
+        assert_eq!(reader.read(&mut bytes).unwrap(), 5);
+        assert_eq!(&bytes[..5], b"hello");
+
+        assert!(reader.read(&mut bytes[5..]).is_err());
+
+        writer.write(b" world").unwrap();
+        drop(writer);
+        assert_eq!(reader.read(&mut bytes[5..]).unwrap(), 6);
         assert_eq!(&bytes[..11], b"hello world");
     }
 

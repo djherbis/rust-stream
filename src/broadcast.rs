@@ -47,6 +47,12 @@ pub struct Listener {
 }
 
 impl Listener {
+    pub fn state(&self, off: u64) -> (usize, bool) {
+        let &(ref lock, _) = &*self.cond;
+        let state = lock.lock().unwrap();
+        (state.size - off as usize, state.open)
+    }
+
     pub fn wait(&self, off: u64) -> (usize, bool) {
         let &(ref lock, ref cvar) = &*self.cond;
         let mut state = lock.lock().unwrap();
