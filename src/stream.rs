@@ -160,6 +160,7 @@ mod tests {
 
         let bytes = thread::spawn(move || {
                 assert_eq!(reader.read(&mut bytes[5..]).unwrap(), 6);
+                assert_eq!(reader.read(&mut bytes[5..]).unwrap(), 0);
                 bytes
             })
             .join()
@@ -186,6 +187,7 @@ mod tests {
         drop(writer);
         assert_eq!(reader.read(&mut bytes[5..]).unwrap(), 6);
         assert_eq!(&bytes[..11], b"hello world");
+        assert_eq!(reader.read(&mut bytes[5..]).unwrap(), 0);
     }
 
     #[test]
