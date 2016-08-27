@@ -3,7 +3,7 @@ stream
 
 [![Release](https://img.shields.io/github/release/djherbis/rust-stream.svg)](https://github.com/djherbis/rust-stream/releases/latest)
 [![Build Status](https://travis-ci.org/djherbis/rust-stream.svg?branch=master)](https://travis-ci.org/djherbis/rust-stream)
-[![Coverage Status](https://coveralls.io/repos/djherbis/rust-stream/badge.svg?branch=master&nocache)](https://coveralls.io/r/djherbis/rust-stream?branch=master)
+[![Coverage Status](https://coveralls.io/repos/djherbis/rust-stream/badge.svg?branch=master&nocachey)](https://coveralls.io/r/djherbis/rust-stream?branch=master)
 
 Usage
 ------------
