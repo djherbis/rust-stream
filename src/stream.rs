@@ -136,8 +136,9 @@ mod tests {
     use std::time::Duration;
     use buffer::Buffer;
     use stream::Writer;
-    use std::path::Path;
+    use std::path::PathBuf;
     use std::io::{Write, Read};
+    use std::env;
 
     #[test]
     fn it_streams_mem() {
@@ -190,10 +191,20 @@ mod tests {
         assert_eq!(reader.read(&mut bytes[5..]).unwrap(), 0);
     }
 
+    #[macro_use(lazy_static)]
+    lazy_static! {
+        static ref TEMPFILE: PathBuf = {
+            let mut dir = PathBuf::new();
+            dir.push("foo.txt");
+            print!("{}\n",dir.as_path().display());
+            dir
+        };
+    }
+
     #[test]
     fn it_streams_on_disk() {
         // TODO(djherbis): reuse this 'test' code
-        let mut writer = Writer::from_path(Path::new("foo.txt")).unwrap();
+        let mut writer = Writer::from_path(&TEMPFILE).unwrap();
         let mut reader = writer.reader().unwrap();
 
         writer.write(b"hello").unwrap();
