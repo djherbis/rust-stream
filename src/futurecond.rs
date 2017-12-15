@@ -34,7 +34,10 @@ impl FutureCond {
     }
 
     pub fn listener(&self) -> Listener {
-        Listener { off: AtomicUsize::new(0), cond: self.cond.clone() }
+        Listener {
+            off: AtomicUsize::new(0),
+            cond: self.cond.clone(),
+        }
     }
 }
 
@@ -72,8 +75,8 @@ impl Stream for Listener {
         let state = self.off.load(Ordering::SeqCst);
         let (off, open) = self.state(state as u64);
         if off > 0 {
-            self.off.swap(off+state, Ordering::SeqCst);
-            return Ok(Async::Ready(Some(off as u64)))
+            self.off.swap(off + state, Ordering::SeqCst);
+            return Ok(Async::Ready(Some(off as u64)));
         }
         if !open {
             return Ok(Async::Ready(None));
