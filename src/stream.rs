@@ -138,7 +138,6 @@ mod tests {
     use stream::Writer;
     use std::path::PathBuf;
     use std::io::{Write, Read};
-    use std::env;
 
     #[test]
     fn it_streams_mem() {
